@@ -1,5 +1,19 @@
-// const myHeading = document.querySelector("h1");
-// myHeading.textContent = "Hello world!";
+// 彩蛋函数
+function showEgg() {
+  const eggContainer = document.getElementById('easter-egg-container');
+  if (eggContainer) {
+    eggContainer.style.display = 'block';
+  }
+}
+function hideEgg() {
+    const eggContainer = document.getElementById('easter-egg-container');
+    if (eggContainer) {
+        eggContainer.style.display = 'none'; // 隐藏图片
+    }
+    
+    // 重置用户序列，这样他们可以再次触发 (可选)
+    userSequence = [];
+}
 
 const my_p = document.querySelector("p");
 my_p.textContent = "波波波波波门！!";
@@ -22,7 +36,11 @@ function setUserName() {
   const myName = prompt("Please enter your name.");
   if (!myName) {
     setUserName();
-  } else {
+  } 
+  else if (myName === "asher407") {
+    showEgg();
+  }
+  else {
   localStorage.setItem("name", myName);
   myHeading.textContent = `Mozilla is cool, ${myName}`;
   }
