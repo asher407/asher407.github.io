@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>组队基因报告 - Team Gene Test</title>
+    <style>
+        /* 全局样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary-color: #6366F1;
+            --secondary-color: #EC4899;
+            --accent-color: #F97316;
+            --text-color: #1F2937;
+            --light-text: #6B7280;
+            --background-color: #F9FAFB;
+            --card-color: #FFFFFF;
+            --border-color: #E5E7EB;
+            --success-color: #10B981;
+            --warning-color: #F59E0B;
+            --error-color: #EF4444;
+            --gradient-primary: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            --gradient-secondary: linear-gradient(135deg, #8B5CF6, #EC4899);
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* 头部样式 */
+        .header {
+            text-align: center;
+            padding: 80px 20px;
+            background: var(--gradient-primary);
+            color: white;
+            border-radius: 20px;
+            margin-bottom: 40px;
+            box-shadow: var(--shadow-xl);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+        
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .header p {
+            font-size: 1.3rem;
+            opacity: 0.95;
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* 测试容器 */
+        .test-container {
+            background: var(--card-color);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: var(--shadow-lg);
+            margin-bottom: 40px;
+            border: 1px solid var(--border-color);
+        }
+        
+        /* 题目样式 */
+        .question {
+            margin-bottom: 40px;
+            padding-bottom: 40px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .question:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .question-number {
+            background: var(--gradient-primary);
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            margin-right: 12px;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .question-text {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--text-color);
+            line-height: 1.5;
+        }
+        
+        .question-instruction {
+            font-size: 0.9rem;
+            color: var(--light-text);
+            margin-bottom: 25px;
+            font-style: italic;
+            background: rgba(99, 102, 241, 0.05);
+            padding: 12px 16px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .option {
+            display: flex;
+            align-items: center;
+            padding: 20px 24px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            background: var(--card-color);
+        }
+        
+        .option:hover {
+            border-color: var(--primary-color);
+            background-color: rgba(99, 102, 241, 0.05);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .option-label {
+            flex: 1;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+        
+        .option-score {
+            width: 70px;
+            padding: 10px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .option-score:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        
+        /* 分数提示 */
+        .score-tip {
+            text-align: center;
+            margin: 20px 0;
+            padding: 16px 20px;
+            background: rgba(245, 166, 35, 0.1);
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--accent-color);
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        /* 按钮样式 */
+        .button-container {
+            text-align: center;
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+        }
+        
+        .btn {
+            padding: 16px 32px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .btn-secondary {
+            background: var(--card-color);
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--gradient-primary);
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .btn:active {
+            transform: translateY(-1px);
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .header {
+                padding: 60px 20px;
+            }
+            
+            .header h1 {
+                font-size: 2.2rem;
+            }
+            
+            .test-container {
+                padding: 20px;
+            }
+            
+            .option {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+                padding: 16px 20px;
+            }
+            
+            .option-score {
+                align-self: flex-end;
+            }
+            
+            .button-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+        
+        /* 加载动画 */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 60px 20px;
+        }
+        
+        .loading.show {
+            display: block;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid var(--border-color);
+            border-top: 5px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部 -->
+        <div class="header">
+            <h1>组队基因报告</h1>
+            <p>探索你的团队角色定位，发现最适合你的团队位置</p>
+        </div>
+        
+        <!-- 测试容器 -->
+        <div id="test-container" class="test-container">
+            <h2 style="text-align: center; margin-bottom: 40px; color: var(--primary-color);">团队角色测试</h2>
+            <div class="question-instruction">
+                每题有六句话，请将十分分配给这六个句子。分配的原则是：最体现您行为的句子分最高，以此类推。最极端的情况也可能是十分全部分配给其中的某一句话。
+            </div>
+            
+            <!-- 题目1 -->
+            <div class="question">
+                <div class="question-text"><span class="question-number">1</span>我认为我能为团队做出贡献是：</div>
+                <div class="options">
+                    <div class="option">
+                        <div class="option-label">A、能快速发现课程项目、竞赛中的新方向或新机遇，提出新颖的想法</div>
+                        <input type="number" class="option-score" data-question="1" data-option="A" min="0" max="10" value="0" oninput="validateScore(this)">
+                    </div>
+                    <div class="option">
+                        <div class="option-label">B、能和不同专业、性格的同学顺畅合作，不排斥差异</div>
+                        <input type="number" class="option-score" data-question="1" data-option="B" min="0" max="10" value="0" oninput="validateScore(this)">
+                    </div>
+                    <div class="option">
+                        <div class="option-label">C、以小组目标为先，善于统筹整组的项目，为小组吸纳优秀成员</div>
+                        <input type="number" class="option-score" data-question="1" data-option="C" min="0" max="10" value="0" oninput="validateScore(this)">
+                    </div>
+                    <div class="option">
+                        <div class="option-label">D、靠自身专业能力或执行力，稳妥完成分配的核心任务</div>
+                        <input type="number" class="option-score" data-question="1" data-option="D" min="0" max="10" value="0" oninput="validateScore(this)">
+                    </div>
+                    <div class="option">
+                        <div class="option-label">E、能客观判断哪些想法可行、哪些不切实际，不盲目跟风</div>
+                        <input type="number" class="option-score" data-question="1" data-option="E" min="0" max="10" value="0" oninput="validateScore(this)">
+                    </div>
+                    <div class="option">
+                        <div class="option-label">F、选择方案时，能不带偏见地提出更合理的替代思路</div>
+                        <input type="number" class="option-score" data-question="1" data-option="F" min="0" max="10" value="0" oninput="validateScore(this)">
+                    </div>
+                </div>
+                <div class="score-tip" data-question="1">当前得分：0/10</div>
+            </div>
+            
+            <!-- 题目2 -->
+            <div class="question">
+                <div class="question-text"><span class="question-number">2</span>在团队中，我可能有的弱点是：</div>
+                <div class="options">
+                    <div class="option">
+                        <div class="option-label">A、如果小组讨论无秩序、没人牵头，我会觉得很困扰</div>
+                        <input type="number" class="option-score" data-question="2" data-option="A" min="0" max="10" value="0" oninput="validateScore(this)">
+                    </div>
+                    <div class="option">
+                        <div class="option-label">B、讨论新话题时容易喋喋不休，推进具体任务时则容易陷入新奇的思路</div>
+                        <input type="number" class="option-score" data-question="2" data-option="B" min="0" max="10" value="0" oninput="validateScore(this)">
+                    </div>
+                    <div class="option">
+                        <div class="option-label">C、太注重逻辑和客观分析，有时难以和同学快速打成一片</div>
+                        <input type="number" class="option-score" data-question="2" data-option="C" min="0" max="10" value="0" oninput="validateScore(this)">
+                    </div>
+                    <div class="option">
+                        <div class="option-label">D、为了按时完成任务（如赶作业截止日期），我可能显得强硬，甚至有点专断</div>
+                        <input type="number" class="option-score" data-question="2" data-option="D" min="0" max="10" value="0" oninput="validateScore(this)">
+                    </div>
+                    <div class="option">
+                        <div class="option-label">E、过分在意小组氛围和谐，遇到分歧时很难坚持自己的不同意见</div>
+                        <input type="number" class="option-score" data-question="2" data-option="E" min="0" max="10" value="0" oninput="validateScore(this)">
+                    </div>
+                    <div class="option">
+                        <div class="option-label">F、同学可能觉得我太关注细节（如报告格式），担心出问题而显得多虑</div>
+                        <input type="number" class="option-score" data-question="2" data-option="F" min="0" max="10" value="0" oninput="validateScore(this)">
+                    </div>
+                </div>
+                <div class="score-tip" data-question="2">当前得分：0/10</div>
+            </div>
+            
+            <!-- 题目3 -->
+            <div class="question">
+                <div class="question-text"><span class="question-number">3</span>当我与其他人共同进行一项工作时：</div>
+                <div class="options">
+                    <div class="option">
+                        <div class="option-label">A、能在不强迫他人的情况下，自然地影响大家的想法或行动</div>
+                        <input type="number" class="option-score" data-question="3" data-option="A" min="0" max="10" value="0" oninput="validateScore(this)">
+                    </div>
+                    <div class="option">
+                        <div class="option-label">B、会随时留意任务中的疏漏（如报告错别字、活动流程漏洞），及时提醒大家</div>
+                        <input type="number" class="option-score" data-question="3" data-option="B" min="0" max="10" value="0" oninput="validateScore(this)">
+                    </div>
+                    <div class="option">
+                        <div class="option-label">C、在提出独到见解（如创新的论证角度、活动形式）方面，我比较突出</div>
+                        <input type="number" class="option-score" data-question="3" data-option="C" min="0" max="10" value="0" oninput="validateScore(this)">
+                    </div>
+                    <div class="option">
+                        <div class="option-label">D、对于能帮小组提升效率的积极建议，我总是全力支持</div>
+                        <input type="number" class="option-score" data-question="3" data-option="D" min="0" max="10" value="0" oninput="validateScore(this)">
+                    </div>
+                    <div class="option">
+                        <div class="option-label">E、相信自己的判断能帮助小组在选择主题、制定方案时做出正确的决策</div>
+                        <input type="number" class="option-score" data-question="3" data-option="E" min="0" max="10" value="0" oninput="validateScore(this)">
+                    </div>
+                    <div class="option">
+                        <div class="option-label">F、能把基础工作（如资料整理、任务分工）安排得井井有条，让人放心</div>
+                        <input type="number" class="option-score" data-question="3" data-option="F" min="0" max="10" value="0" oninput="validateScore(this)">
+                    </div>
+                </div>
+                <div class="score-tip" data-question="3">当前得分：0/10</div>
+            </div>
+            
+            <!-- 题目4 -->
+            <div class="question">
+                <div class="question-text"><span class="question-number">4</span>我在工作团队中的特征是：</div>
+                <div class="options">
+                    <div class="option">
+                        <div class="option-label">A、喜欢了解同学的专业特长、兴趣爱好，方便更好配合</div>
+                        <input type="number" class="option-score" data-question="4" data-option="A" min="0" max="10" value="0" oninput="validateScore(this)">
+                    </div>
+                    <div class="option">
+                        <div class="option-label">B、辩论时，能找到充分理由反驳不够合理的主张（如逻辑漏洞、数据不足）</div>
+                        <input type="number" class="option-score" data-question="4" data-option="B" min="0" max="10" value="0" oninput="validateScore(this)">
+                    </div>
+                    <div class="option">
+                        <div class="option-label">C、一旦确定计划，我有能力推动大家快速行动、落地执行</div>
+                        <input type="number" class="option-score" data-question="4" data-option="C" min="0" max="10" value="0" oninput="validateScore(this)">
+                    </div>
+                    <div class="option">
+                        <div class="option-label">D、对分配给我的任务（如撰写报告章节、组织小环节），会追求尽善尽美</div>
+                        <input type="number" class="option-score" data-question="4" data-option="D" min="0" max="10" value="0" oninput="validateScore(this)">
+                    </div>
+                    <div class="option">
+                        <div class="option-label">E、乐于通过各种渠道收集有用的信息，获取支持</div>
+                        <input type="number" class="option-score" data-question="4" data-option="E" min="0" max="10" value="0" oninput="validateScore(this)">
+                    </div>
+                    <div class="option">
+                        <div class="option-label">F、虽然愿意倾听所有观点，但该做决定时能果断拍板</div>
+                        <input type="number" class="option-score" data-question="4" data-option="F" min="0" max="10" value="0" oninput="validateScore(this)">
+                    </div>
+                </div>
+                <div class="score-tip" data-question="4">当前得分：0/10</div>
+            </div>
+            
+            <!-- 题目5 -->
+            <div class="question">
+                <div class="question-text"><span class="question-number">5</span>在工作中，我得到满足，因为：</div>
+                <div class="options">
+                    <div class="option">
+                        <div class="option-label">A、喜欢分析任务场景，权衡各种方案的利弊后做选择</div>
+                        <input type="number" class="option-score" data-question="5" data-option="A" min="0" max="10" value="0" oninput="validateScore(this)">
+                    </div>
+                    <div class="option">
+                        <div class="option-label">B、热衷于为小组遇到的问题（如报告逻辑混乱、活动流程卡壳）寻找可行解法</div>
+                        <input type="number" class="option-score" data-question="5" data-option="B" min="0" max="10" value="0" oninput="validateScore(this)">
+                    </div>
+                    <div class="option">
+                        <div class="option-label">C、能和同学建立良好的合作关系，营造轻松的协作氛围</div>
+                        <input type="number" class="option-score" data-question="5" data-option="C" min="0" max="10" value="0" oninput="validateScore(this)">
+                    </div>
+                    <div class="option">
+                        <div class="option-label">D、我的想法或建议能对小组决策产生重要影响</div>
+                        <input type="number" class="option-score" data-question="5" data-option="D" min="0" max="10" value="0" oninput="validateScore(this)">
+                    </div>
+                    <div class="option">
+                        <div class="option-label">E、有全身心投入任务的热情，比如为了竞赛熬夜打磨方案也不觉得累</div>
+                        <input type="number" class="option-score" data-question="5" data-option="E" min="0" max="10" value="0" oninput="validateScore(this)">
+                    </div>
+                    <div class="option">
+                        <div class="option-label">F、能有发挥想象力的空间（如设计活动创意、报告呈现形式）</div>
+                        <input type="number" class="option-score" data-question="5" data-option="F" min="0" max="10" value="0" oninput="validateScore(this)">
+                    </div>
+                </div>
+                <div class="score-tip" data-question="5">当前得分：0/10</div>
+            </div>
+            
+            <!-- 题目6 -->
+            <div class="question">
+                <div class="question-text"><span class="question-number">6</span>如果突然给我一件困难的工作，而且时间有限，人员不熟：</div>
+                <div class="options">
+                    <div class="option">
+                        <div class="option-label">A、更愿意和态度积极、主动配合的同学一起推进任务</div>
+                        <input type="number" class="option-score" data-question="6" data-option="A" min="0" max="10" value="0" oninput="validateScore(this)">
+                    </div>
+                    <div class="option">
+                        <div class="option-label">B、会考虑每个人的特长（如擅长表达、擅长写作），合理分配工作减轻负担</div>
+                        <input type="number" class="option-score" data-question="6" data-option="B" min="0" max="10" value="0" oninput="validateScore(this)">
+                    </div>
+                    <div class="option">
+                        <div class="option-label">C、天生的紧迫感会促使我推动团队，避免落后于计划</div>
+                        <input type="number" class="option-score" data-question="6" data-option="C" min="0" max="10" value="0" oninput="validateScore(this)">
+                    </div>
+                    <div class="option">
+                        <div class="option-label">D、能保持冷静，有条理地分析问题、拆解任务</div>
+                        <input type="number" class="option-score" data-question="6" data-option="D" min="0" max="10" value="0" oninput="validateScore(this)">
+                    </div>
+                    <div class="option">
+                        <div class="option-label">E、即使遇到很多困难，也会坚持最初的目标不放弃</div>
+                        <input type="number" class="option-score" data-question="6" data-option="E" min="0" max="10" value="0" oninput="validateScore(this)">
+                    </div>
+                    <div class="option">
+                        <div class="option-label">F、愿意组织大家广泛讨论，激发新想法来解决问题</div>
+                        <input type="number" class="option-score" data-question="6" data-option="F" min="0" max="10" value="0" oninput="validateScore(this)">
+                    </div>
+                </div>
+                <div class="score-tip" data-question="6">当前得分：0/10</div>
+            </div>
+            
+            <!-- 题目7 -->
+            <div class="question">
+                <div class="question-text"><span class="question-number">7</span>对于那些在团队工作中或与周围人共事时所遇到的问题：</div>
+                <div class="options">
+                    <div class="option">
+                        <div class="option-label">A、我容易对拖延进度、阻碍前进的同学表现出不耐烦</div>
+                        <input type="number" class="option-score" data-question="7" data-option="A" min="0" max="10" value="0" oninput="validateScore(this)">
+                    </div>
+                    <div class="option">
+                        <div class="option-label">B、同学可能觉得我太注重分析，缺乏直觉和灵活性</div>
+                        <input type="number" class="option-score" data-question="7" data-option="B" min="0" max="10" value="0" oninput="validateScore(this)">
+                    </div>
+                    <div class="option">
+                        <div class="option-label">C、有强烈的责任心，能确保任务持续推进不中断</div>
+                        <input type="number" class="option-score" data-question="7" data-option="C" min="0" max="10" value="0" oninput="validateScore(this)">
+                    </div>
+                    <div class="option">
+                        <div class="option-label">D、有时会感到厌烦，需要有激情的同学带动我重新投入</div>
+                        <input type="number" class="option-score" data-question="7" data-option="D" min="0" max="10" value="0" oninput="validateScore(this)">
+                    </div>
+                    <div class="option">
+                        <div class="option-label">E、如果任务目标不明确，我很难快速开始行动</div>
+                        <input type="number" class="option-score" data-question="7" data-option="E" min="0" max="10" value="0" oninput="validateScore(this)">
+                    </div>
+                    <div class="option">
+                        <div class="option-label">F、和同学产生严重分歧时，不确定能否让对方理解我的观点</div>
+                        <input type="number" class="option-score" data-question="7" data-option="F" min="0" max="10" value="0" oninput="validateScore(this)">
+                    </div>
+                </div>
+                <div class="score-tip" data-question="7">当前得分：0/10</div>
+            </div>
+            
+            <!-- 按钮容器 -->
+            <div class="button-container">
+                <button class="btn btn-secondary" onclick="resetTest()">重新开始</button>
+                <button class="btn btn-primary" onclick="submitTest()">提交测试</button>
+            </div>
+        </div>
+        
+        <!-- 加载动画 -->
+        <div id="loading" class="loading">
+            <div class="loading-spinner"></div>
+            <p>正在分析你的组队基因...</p>
+        </div>
+    </div>
+    
+    <script>
+        // 验证分数输入
+        function validateScore(input) {
+            const question = input.dataset.question;
+            const inputs = document.querySelectorAll(`[data-question="${question}"]`);
+            let total = 0;
+            
+            // 先计算当前输入前的总分
+            inputs.forEach(inp => {
+                if (inp !== input) {
+                    total += parseInt(inp.value) || 0;
+                }
+            });
+            
+            // 获取当前输入值
+            let currentValue = parseInt(input.value) || 0;
+            
+            // 检查是否超过10分
+            if (total + currentValue > 10) {
+                // 实时提醒
+                alert(`第${question}题当前总分为${total}分，您输入了${currentValue}分，已超过10分！\n\n请调整分数，确保该题总分为10分。`);
+                // 自动修正为剩余可用分数
+                const remaining = 10 - total;
+                if (remaining >= 0) {
+                    input.value = remaining;
+                    currentValue = remaining;
+                } else {
+                    input.value = 0;
+                    currentValue = 0;
+                }
+            }
+            
+            // 重新计算总分
+            total = 0;
+            inputs.forEach(inp => {
+                const value = parseInt(inp.value) || 0;
+                if (value < 0) inp.value = 0;
+                if (value > 10) inp.value = 10;
+                total += parseInt(inp.value) || 0;
+            });
+            
+            const tip = document.querySelector(`[data-question="${question}"].score-tip`);
+            tip.textContent = `当前得分：${total}/10`;
+            
+            if (total === 10) {
+                tip.style.backgroundColor = 'rgba(126, 211, 33, 0.1)';
+                tip.style.color = 'var(--success-color)';
+            } else if (total > 10) {
+                tip.style.backgroundColor = 'rgba(208, 2, 27, 0.1)';
+                tip.style.color = 'var(--error-color)';
+            } else {
+                tip.style.backgroundColor = 'rgba(245, 166, 35, 0.1)';
+                tip.style.color = 'var(--accent-color)';
+            }
+        }
+        
+        // 提交测试
+        function submitTest() {
+            // 检查是否所有题目都已完成
+            for (let i = 1; i <= 7; i++) {
+                const inputs = document.querySelectorAll(`[data-question="${i}"]`);
+                let total = 0;
+                inputs.forEach(input => {
+                    total += parseInt(input.value) || 0;
+                });
+                if (total !== 10) {
+                    alert(`请确保第${i}题的得分总和为10分`);
+                    return;
+                }
+            }
+            
+            // 显示加载动画
+            document.getElementById('test-container').style.display = 'none';
+            document.getElementById('loading').classList.add('show');
+            
+            // 模拟分析过程
+            setTimeout(() => {
+                // 计算各角色得分
+                const scores = {
+                    '自律实干家': 0,
+                    '航线主理人': 0,
+                    '思维破局者': 0,
+                    '理性监督员': 0,
+                    '团队粘合剂': 0,
+                    '细节质检官': 0
+                };
+                
+                // 自律实干家：得分 = 一 E + 二 A + 三 F + 四 C + 五 B + 六 E + 七 E
+                scores['自律实干家'] = 
+                    parseInt(document.querySelector('[data-question="1"][data-option="E"]').value) +
+                    parseInt(document.querySelector('[data-question="2"][data-option="A"]').value) +
+                    parseInt(document.querySelector('[data-question="3"][data-option="F"]').value) +
+                    parseInt(document.querySelector('[data-question="4"][data-option="C"]').value) +
+                    parseInt(document.querySelector('[data-question="5"][data-option="B"]').value) +
+                    parseInt(document.querySelector('[data-question="6"][data-option="E"]').value) +
+                    parseInt(document.querySelector('[data-question="7"][data-option="E"]').value);
+                
+                // 航线主理人：得分 = 一 C + 二 D + 三 A + 四 F + 五 D + 六 B + 七 A
+                scores['航线主理人'] = 
+                    parseInt(document.querySelector('[data-question="1"][data-option="C"]').value) +
+                    parseInt(document.querySelector('[data-question="2"][data-option="D"]').value) +
+                    parseInt(document.querySelector('[data-question="3"][data-option="A"]').value) +
+                    parseInt(document.querySelector('[data-question="4"][data-option="F"]').value) +
+                    parseInt(document.querySelector('[data-question="5"][data-option="D"]').value) +
+                    parseInt(document.querySelector('[data-question="6"][data-option="B"]').value) +
+                    parseInt(document.querySelector('[data-question="7"][data-option="A"]').value);
+                
+                // 思维破局者（创意思维师）：得分 = 一 A + 二 B + 三 C + 四 E + 五 F + 六 F + 七 D
+                scores['思维破局者'] = 
+                    parseInt(document.querySelector('[data-question="1"][data-option="A"]').value) +
+                    parseInt(document.querySelector('[data-question="2"][data-option="B"]').value) +
+                    parseInt(document.querySelector('[data-question="3"][data-option="C"]').value) +
+                    parseInt(document.querySelector('[data-question="4"][data-option="E"]').value) +
+                    parseInt(document.querySelector('[data-question="5"][data-option="F"]').value) +
+                    parseInt(document.querySelector('[data-question="6"][data-option="F"]').value) +
+                    parseInt(document.querySelector('[data-question="7"][data-option="D"]').value);
+                
+                // 理性监督员：得分 = 一 F + 二 C + 三 E + 四 B + 五 A + 六 D + 七 B
+                scores['理性监督员'] = 
+                    parseInt(document.querySelector('[data-question="1"][data-option="F"]').value) +
+                    parseInt(document.querySelector('[data-question="2"][data-option="C"]').value) +
+                    parseInt(document.querySelector('[data-question="3"][data-option="E"]').value) +
+                    parseInt(document.querySelector('[data-question="4"][data-option="B"]').value) +
+                    parseInt(document.querySelector('[data-question="5"][data-option="A"]').value) +
+                    parseInt(document.querySelector('[data-question="6"][data-option="D"]').value) +
+                    parseInt(document.querySelector('[data-question="7"][data-option="B"]').value);
+                
+                // 团队粘合剂：得分 = 一 B + 二 E + 三 D + 四 A + 五 C + 六 A + 七 F
+                scores['团队粘合剂'] = 
+                    parseInt(document.querySelector('[data-question="1"][data-option="B"]').value) +
+                    parseInt(document.querySelector('[data-question="2"][data-option="E"]').value) +
+                    parseInt(document.querySelector('[data-question="3"][data-option="D"]').value) +
+                    parseInt(document.querySelector('[data-question="4"][data-option="A"]').value) +
+                    parseInt(document.querySelector('[data-question="5"][data-option="C"]').value) +
+                    parseInt(document.querySelector('[data-question="6"][data-option="A"]').value) +
+                    parseInt(document.querySelector('[data-question="7"][data-option="F"]').value);
+                
+                // 细节质检官：得分 = 一 D + 二 F + 三 B + 四 D + 五 E + 六 C + 七 C
+                scores['细节质检官'] = 
+                    parseInt(document.querySelector('[data-question="1"][data-option="D"]').value) +
+                    parseInt(document.querySelector('[data-question="2"][data-option="F"]').value) +
+                    parseInt(document.querySelector('[data-question="3"][data-option="B"]').value) +
+                    parseInt(document.querySelector('[data-question="4"][data-option="D"]').value) +
+                    parseInt(document.querySelector('[data-question="5"][data-option="E"]').value) +
+                    parseInt(document.querySelector('[data-question="6"][data-option="C"]').value) +
+                    parseInt(document.querySelector('[data-question="7"][data-option="C"]').value);
+                
+                // 找出得分最高的角色
+                let maxScore = 0;
+                let resultRole = '';
+                Object.entries(scores).forEach(([role, score]) => {
+                    if (score > maxScore) {
+                        maxScore = score;
+                        resultRole = role;
+                    }
+                });
+                
+                // 团队角色数据
+                const teamRoles = {
+                    '思维破局者': {
+                        image: '前导1图像/思维破局者.jpg',
+                        description: '你是团队里的“灵感风暴眼”与“跨界链接器”。你天生对外界充满好奇，像一台永远在搜索新频率的雷达，总能捕捉到最新鲜的资讯和观点。你讨厌墨守成规，乐于用天马行空的想象力，为团队打开一扇扇新世界的窗户。你的存在，确保了团队不会陷入“信息茧房”和思维定式。当然，你可能不太关心细枝末节，有时略显“高高在上”，兴趣点也像流星一样绚烂而多变——但这正是你保持创造活力的秘诀。团队有你，永远不用担心思路枯竭。',
+                        traits: ['创新思维', '跨界链接', '想象力丰富', '打破常规']
+                    },
+                    '航线主理人': {
+                        image: '前导1图像/航线主理人.jpg',
+                        description: '你是团队中天生的“组长”与“船长”。当众人还在海面迷茫时，你已能眺望彼岸，并果断下达“全速前进”的指令。你擅长在讨论中聚焦核心，用强大行动力带领团队前行。你追求效率、厌恶拖沓，是“定方向-跟进度-拿结果”的闭环构建者。然而，你有时也会因目标导向而显得说话直接、缺少创意火花，这份冲劲可能让团队感到压力——但这恰是你作为“主理人”无可替代的价值：没有你果决的航线，再好的船也容易在风浪中迷失方向。',
+                        traits: ['领导力', '目标导向', '决策果断', '行动力强']
+                    },
+                    '理性监督员': {
+                        image: '前导1图像/理性监督员.jpg',
+                        description: '你是团队中的“理性监督员”与“质量守门员”。当众人为创意热血沸腾时，你总能冷静分析，精准指出逻辑漏洞与潜在风险，并用强大的分析判断能力过滤不切实际的幻想，让方案更扎实可行。你的思维缜密，判断清醒，是防止团队“翻车”的关键保障；不过，如同一位专注于拦截的守门员，你有时可能会显得缺乏热情与想象力，也难以被他人鼓舞或主动激励团队。但这恰恰成就了你的独特价值——你能让团队在关键时刻少失球、走得更稳。',
+                        traits: ['逻辑分析', '风险评估', '理性判断', '质量保障']
+                    },
+                    '团队粘合剂': {
+                        image: '前导1图像/团队粘合剂.jpg',
+                        description: '你是团队中温柔的“氛围调节师”与“凝聚力核心”。你拥有极高的人际敏感度，像海绵一样吸收着团队成员的情绪与需求。当出现分歧时，你是最好的倾听者和调解者；当气氛沉默时，你总能巧妙打破僵局，鼓励他人发声。然而在危急时刻，你的温和与适应力有时会显得优柔寡断，习惯保持中庸——这份慎重虽能为团队护航，却也让你偶尔难以做出孤注一掷的决断。但正是你给予的支持与包容，让团队在风雨中始终拥有温暖的港湾。',
+                        traits: ['人际敏感', '沟通协调', '团队建设', '情绪管理']
+                    },
+                    '自律实干家': {
+                        image: '前导1图像/蓝图实现师.jpg',
+                        description: '你是团队中可靠的“自律实干家”。当宏伟的战略和精彩的创意被提出后，是你站出来，将它们翻译成一步步清晰、可行的落地计划。你务实、勤奋，善于将抽象的想法整理成能与现有系统完美配合的具体步骤。不过，你对没有把握的新主意往往不太“来电”，有时会显得过于保守、缺乏灵活——这份谨慎虽让执行不走样，却也可能让你错过突破常规的精彩。但正是你一步一个脚印的扎实，才让团队的梦想真正落在了坚实的大地上。',
+                        traits: ['执行力', '计划落地', '务实可靠', '自律勤奋']
+                    },
+                    '细节质检官': {
+                        image: '前导1图像/细节质检官.jpg',
+                        description: '你是团队中一丝不苟的“完美主义守护者”与“进度警报器”。你对品质和期限有着天然的敏感，时刻审视着每个细节与时间节点。你善于发现那些容易被忽视的错误与风险，并用紧迫感推动团队向前。然而，这份追求完美的执着有时会让你陷入细节的漩涡，焦虑感也随之而来——你会反复忧虑“哪里可能出错”。这种“不洒脱”可能会给团队带来压力，但也正因你像精密仪器般的严谨，才确保了每一项成果都能经得起最苛刻的检验。',
+                        traits: ['细节关注', '质量控制', '风险预警', '完美主义']
+                    }
+                };
+                
+                // 跳转到结果页面
+                setTimeout(() => {
+                    window.location.href = `result.html?role=${encodeURIComponent(resultRole)}`;
+                }, 2000);
+            }, 2000);
+        }
+        
+        // 重新开始测试
+        function resetTest() {
+            // 重置所有分数
+            document.querySelectorAll('.option-score').forEach(input => {
+                input.value = 0;
+            });
+            // 重置得分提示
+            document.querySelectorAll('.score-tip').forEach(tip => {
+                tip.textContent = '当前得分：0/10';
+                tip.style.backgroundColor = 'rgba(245, 166, 35, 0.1)';
+                tip.style.color = 'var(--accent-color)';
+            });
+        }
+    </script>
+</body>
+</html>
